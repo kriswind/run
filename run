@@ -1,0 +1,16 @@
+#!/bin/bash
+# A script to run programs detached from the terminal
+
+if [ -z "$1" ]; then
+    echo "Usage: run <program> [arguments...]"
+    exit 1
+fi
+
+# Capture the program and arguments
+program="$1"
+shift
+args="$@"
+
+# Run the program detached from the terminal
+setsid "$program" $args > /dev/null 2>&1 &
+
