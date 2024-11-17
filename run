@@ -1,8 +1,8 @@
 #!/bin/bash
-# A script to run programs detached from the terminal
+# A script to run programs detached from the terminal and relay system error messages
 
 if [ -z "$1" ]; then
-    echo "Usage: run <program> [arguments...]"
+    echo "Usage: $0 <program> [arguments...]"
     exit 1
 fi
 
@@ -11,6 +11,36 @@ program="$1"
 shift
 args="$@"
 
-# Run the program detached from the terminal
-setsid "$program" $args > /dev/null 2>&1 &
+# Test if the command exists using `command -v`
+if ! command -v "$program" >/dev/null 2>&1; then
+    echo "Error: Command '$program' not found."
+    exit 1
+fi
+
+# Code to run to 0 arguments are passed to the program
+if [ -z "$args" ]; then
+    setsid "$program" >/dev/null 2>&1 &
+    pid=$!
+
+    if [ $? -eq 0 ]; then
+        echo "'$program' successfully started in the background with PID $pid."
+        exit 0
+    else
+        echo "Error: $?"
+        exit 1
+    fi
+
+fi
+
+# If successful, run the program with its arguments detached
+setsid "$program" $args >/dev/null 2>&1 &
+pid=$!
+
+if [ $? -eq 0 ]; then
+    echo "'$program $args' successfully started in the background with PID $pid."
+    exit 0
+else
+    echo "Error: $?"
+    exit 1
+fi
 
